@@ -111,13 +111,9 @@ namespace S3ToPg
             using (var s3Reader = new StreamReader(s3Obj.ResponseStream))
             {
                 var copyCommand = string.Format("COPY {0} FROM STDIN (DELIMITER '{1}')", tableName, delimiter);
-                using (var writer = connection.BeginTextImport(copyCommand))
+                using (var writer = (StreamWriter)connection.BeginTextImport(copyCommand))
                 {
-                    while (!s3Reader.EndOfStream)
-                    {
-                        var line = s3Reader.ReadLine();
-                        writer.WriteLine(line);
-                    }
+                    s3Reader.BaseStream.CopyTo(writer.BaseStream);
                 }
             }
         }
@@ -145,13 +141,9 @@ namespace S3ToPg
             using (var reader = new StreamReader(decompressStream))
             {
                 var copyCommand = string.Format("COPY {0} FROM STDIN (DELIMITER '{1}')", tableName, delimiter);
-                using (var writer = connection.BeginTextImport(copyCommand))
+                using (var writer = (StreamWriter)connection.BeginTextImport(copyCommand))
                 {
-                    while (!reader.EndOfStream)
-                    {
-                        var line = reader.ReadLine();
-                        writer.WriteLine(line);
-                    }
+                    reader.BaseStream.CopyTo(writer.BaseStream);
                 }
             }
         }
